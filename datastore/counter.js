@@ -43,7 +43,7 @@ exports.getNextUniqueId = (callback) => {
     id += 1;
     writeCounter(id, (err, id) => {
       callback(err, id);
-    })
+    });
   });
   // return undefined;
 };

@@ -21,40 +21,67 @@ exports.create = (text, callback) => {
 };
 
 exports.readAll = (callback) => {
-  var data = _.map(items, (text, id) => {
-    return { id, text };
+  // read files from dataDir
+  fs.readdir(`${exports.dataDir}`, (err, files) => {
+    var data = _.map(files, (id, text)=> {
+      let fileNameId = id.slice(0,-4);
+      return {
+        id: fileNameId,
+        text: fileNameId
+      }
+    });
+    callback(null, data);
   });
-  callback(null, data);
 };
 
 exports.readOne = (id, callback) => {
-  var text = items[id];
-  if (!text) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback(null, { id, text });
-  }
+  fs.readFile(`${exports.dataDir}/${id}.txt`, 'utf8', (err, data) => {
+    if (!data) {
+      callback(new Error(`No item with id: ${id}`));
+    } else {
+      callback(null, { id: id, text: data});
+    }
+  })
 };
 
 exports.update = (id, text, callback) => {
-  var item = items[id];
-  if (!item) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    items[id] = text;
-    callback(null, { id, text });
-  }
+  // var item = items[id]; //setting for example item to equal 00001
+  // plan to remove the reference to the items variable and replace it
+// how to find that one
+// change it by overwriting old text
+// and put the new desired text in the file
+// READFILE
+  fs.readFile(`${exports.dataDir}/${id}.txt`, 'utf8', (err, data) => {
+    if (!data) {
+      callback(new Error(`No item with id: ${id}`));
+    } else {
+      fs.writeFile(`${exports.dataDir}/${id}.txt`, text, (err, data) => {
+        if (err) {
+          throw err;
+        } else {
+          callback(null, {id, text});
+        }
+      });
+    }
+  });
 };
 
 exports.delete = (id, callback) => {
-  var item = items[id];
-  delete items[id];
-  if (!item) {
-    // report an error if item not found
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback();
-  }
+  fs.readFile(`${exports.dataDir}/${id}.txt`, 'utf8', (err, data) => {
+    if (!data) {
+      callback(new Error(`No item with id: ${id}`));
+    } else {
+      fs.unlink(`${exports.dataDir}/${id}.txt`, (err) => {
+        if (err) {
+          console.log(err);
+          return;
+        } else {
+          console.log(`${exports.dataDir}/${id}.txt was deleted`);
+          callback();
+        }
+      })
+    }
+  });
 };
 
 // Config+Initialization code -- DO NOT MODIFY /////////////////////////////////
